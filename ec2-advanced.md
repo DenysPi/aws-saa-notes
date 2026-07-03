@@ -52,3 +52,39 @@ C'est la carte réseau, un composant qui permet de communiquer sur le réseau.EN
 1. L'ENI est **indépendante** et **déplacable**.Je peux la détacher d'une instance et la rattacher a une autre(fly)
 2. Si une instance tombe, je déplace son ENI(avec son IP et ses security groups) vers une instance de secours(failover)
 
+## Hibernate
+
+- Stop(arret normal) : la RAM est perdue. Au redémarrage, l'OS reboote de zéro
+- Terminate : l'instance est supprimé définitivement
+- Hibernate : préserve le contenu de la RAM
+
+### Ce que fait Hibernate
+
+- Au lieu de tout éteindre, l'état de la RAM est sauvegardé sur le disque EBS root
+- Au redémarrage, la RAM est rechargé telle quelle
+- Reprise très rapide(pas de long boot, pas de rechargement d'appli)
+<img width="257" height="377" alt="image" src="https://github.com/user-attachments/assets/98d3fd94-302c-4a82-bdf7-230fb6bc779a" />
+
+### Cas d'usage
+
+- Services longs à démarrer
+- Garder l'état de RAM
+
+### Conditions / limites
+
+- La RAM est sauvegarddé sur l'EBS root, il doit etre chiffré et asses grand pour contenir toute la RAM
+- Instance RAM taille doit etre < 150GB
+- Ne pas hiberner plus de 60 jours d'affilée
+- N'est pas supporté pour **métal nu**(une instance ou on a accés directement au serveur physique, sans la couche de virtualisation)
+
+**Virtualisation** - découper un serveur physique en plusieurs machines virtuelles isolées
+**Hyperviseur** - le logiciel qui fait ce découpage
+
+**Sans hyperviseur le hibernate n'est pas possible car serveur physique, sans virtualisation ne peut pas prendre l'image de RAM***
+
+### Hibernate — pratique
+- À la création de l'instance → Advanced details → activer "Stop - Hibernate behavior".
+- Ensuite, pour mettre en pause : Actions → Stop → Hibernate.
+- Au redémarrage, l'état de la RAM (donc l'OS et les process) est conservé tel quel : pas de reboot complet, on reprend où on s'était arrêté.
+
+
