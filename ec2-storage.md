@@ -51,6 +51,61 @@ On peut recréer un volume à partir d'un snapshot.
 - Initialise complètement le volume à l'avance → zéro latence au premier accès.
 - Coûte cher → réservé aux cas où la perf immédiate est critique.
 
+### Types de volumes EBS
+
+- **gp2 / gp3 (SSD)** = volume SSD polyvalent, équilibre prix/performance
+  pour une grande variété de charges de travail
+- **io1 / io2 Block Express (SSD)** = volume SSD haute performance, pour
+  charges critiques nécessitant faible latence ou haut débit
+- **st1 (HDD)** = volume HDD bon marché, pour charges fréquemment
+  consultées et gourmandes en débit
+- **sc1 (HDD)** = volume HDD le moins cher, pour charges peu fréquemment
+  consultées
+
+**Seuls gp2/gp3 et io1/io2 Block Express peuvent servir de boot volume**
+
+### Cas d'usage par type
+
+**SSD**
+- Stockage économique, faible latence
+- Volumes de démarrage système, postes virtuels, environnements de test
+- Taille : 1 GiB - 16 TiB
+- **gp3 :**
+  - Base de 3000 IOPS et débit de 125 MiB/s
+  - Peut augmenter jusqu'à 16 000 IOPS et 1000 MiB/s de débit
+- **gp2 :**
+  - Les petits volumes gp2 peuvent monter en rafale (burst) jusqu'à 3000 IOPS
+  - Taille du volume et IOPS sont liés, max IOPS = 16 000
+  - 3 IOPS par GiB → à 5334 GiB, on atteint déjà le max
+
+**Provisioned IOPS (PIOPS) SSD**
+- Applications critiques nécessitant des IOPS soutenus, ou besoin de
+  plus de 16 000 IOPS
+- Idéal pour les charges de bases de données
+- Supporte EBS Multi-Attach (voir plus loin)
+
+- **io1 (4 GiB - 16 TiB) :**
+  - Max PIOPS = 64 000 pour les instances EC2 Nitro, 32 000 pour les autres
+  - Peut augmenter les PIOPS indépendamment de la taille de stockage
+
+- **io2 Block Express (4 GiB - 64 TiB) :**
+  - Latence sous la milliseconde
+  - Max PIOPS = 256 000, avec un ratio IOPS:GiB de 1000:1 (pour 1 GiB, on peut aller jusqu'à 1000 IOPS)
+
+**HDD**
+- Ne peuvent PAS servir de boot volume
+- Taille : 125 GiB à 16 TiB
+
+- **Throughput Optimized HDD (st1) :**
+  - Big data, entrepôts de données, traitement de logs
+  - Débit max 500 MiB/s — IOPS max 500
+
+- **Cold HDD (sc1) :**
+  - Pour données peu fréquemment consultées
+  - Scénarios où le coût le plus bas prime
+  - Débit max 250 MiB/s — IOPS max 250
+
+
 
 ## EC2 Instance Store
 
