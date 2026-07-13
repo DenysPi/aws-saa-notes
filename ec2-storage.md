@@ -107,6 +107,33 @@ On peut recréer un volume à partir d'un snapshot.
 
 
 
+### EBS Multi-Attach — io1/io2
+- Attacher le MÊME volume EBS à plusieurs instances EC2, dans la même AZ
+- Chaque instance a un accès complet en lecture ET écriture sur le volume
+- Cas d'usage :
+  - Atteindre une **plus haute disponibilité** applicative sur des applications Linux en cluster
+  - L'application doit elle-même gérer les écritures concurrentes
+- **Jusqu'à 16 instances EC2 à la fois**
+- Doit utiliser un système de fichiers "cluster-aware" (PAS EXT4)
+  - EXT4 = système classique, pas prévu pour le multi-accès simultané
+  - Système cluster-aware = a des mécanismes de verrouillage pour éviter que plusieurs machines écrivent au même endroit en même temps et corrompent les données
+
+<img width="215" height="232" alt="image" src="https://github.com/user-attachments/assets/5571793b-cd61-4408-8e5a-cae5512cb500" />
+
+
+### EBS Encryption
+
+- When you create an encrypted EBS volume, you get the following :
+  - Data at rest is encrypted inside the volume
+  - All the data in flight moving between the instance and the volume is encrypted
+  - All snapshots are encrypted
+  - All volumes created from the saphosts are encrypyed
+- Encryption and descryption are handled by EC2
+- Encryption has minimal impact on latency
+- EBS Encryption leverages keys from KMS (AES-256)
+- Copying an unencrypted snapshot allows encryption
+- 
+
 ## EC2 Instance Store
 
 - Les volumes EBS sont des disques réseau avec de bonnes performances,
@@ -124,3 +151,58 @@ On peut recréer un volume à partir d'un snapshot.
 **OIPS** = le nombre de requêtes de lecture/écriture que le système de stockage peut traiter par seconde.
 
 **Bandwidth** = est la quantité de données pouvant être transférée entre le stockage et le système pendant une unité de temps
+
+## EFS - Elastic File System
+
+- Managed NFS (network file system) that can be mounted pn many EC2
+- EFS works with EC2 instances in multi-AZ
+- Highly avaivable, scalable, expensive, pay per use
+- Use cases : content management, web serving, data sharing, Wordpress
+- Uses NFSv4.1 prtocol
+- Uses security group to control acces to EFS
+- Compatible with Linux based AMI only
+- Encryption at rest using KMS
+- POSIX file system that hast a standart file API
+- File stem scales automatically, pay per use no capacity planning
+
+<img width="318" height="167" alt="image" src="https://github.com/user-attachments/assets/5ea84aa4-8042-4e4e-bace-9329d076716d" />
+
+
+**NFS** = permet à plusieurs machines de partager un meme espace de fichiers via le réseau, en y accésant toutes de la meme facon, comme si les fichiers etaient stocjes localement chez chacune
+
+### Performance 
+
+**EFS Scale**
+- Milliers de clients NFS simultanés, 10+ GB/s de débit total
+- Grandit automatiquement jusqu'au pétaoctet, sans gestion de capacité
+
+**Performance Mode (choisi à la création, ne change pas après)**
+- **General Purpose** = faible latence par opération → cas classiques (serveur web, CMS). Choix par défaut.
+- **Max I/O** = latence un peu plus élevée par opération, mais parallélisme massif → big data, traitement média avec des milliers de clients simultanés
+
+**Throughput Mode (modifiable après création)**
+- **Bursting** = débit de base proportionnel à la taille stockée (50 MiB/s par To), avec burst possible jusqu'à 100 MiB/s par To
+- **Provisioned** = tu fixes le débit toi-même, indépendamment de la taille → utile si peu de données mais besoin de gros débit
+- **Elastic** = ajustement automatique selon la charge réelle (jusqu'à 3 GiB/s lecture, 1 GiB/s écriture) → pour les charges imprévisibles
+
+### Storage Classes
+
+**Storage Tiers (lifecycle management)**
+Déplace automatiquement les fichiers selon leur fréquence d'accès (après N jours).
+- **Standard** = fichiers fréquemment accédés (le plus cher, le plus rapide)
+- **Infrequent Access (EFS-IA)** = coût réduit pour stocker, mais coût à chaque récupération de fichier
+- **Archive** = données très rarement consultées (quelques fois/an), 50% moins cher
+- Lifecycle Policy = règle automatique qui déplace les fichiers entre niveaux près N jours sans accès (ex : 60 jours → Standard vers IA)
+- Totalement transparent pour l'application
+
+
+<img width="192" height="276" alt="image" src="https://github.com/user-attachments/assets/a8b4a0d6-c0f3-423e-af31-b56ac89aac90" />
+
+**Availability & Durability**
+- **Standard** = Multi-AZ → pour la PRODUCTION (résilient)
+- **One Zone** = 1 seule AZ, moins cher, backup activé par défaut → pour DEV/TEST. Compatible avec IA (EFS One Zone-IA)
+
+### Économies
+Jusqu'à 90%+ en combinant storage tiers + One Zone
+
+
