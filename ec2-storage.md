@@ -123,16 +123,14 @@ On peut recréer un volume à partir d'un snapshot.
 
 ### EBS Encryption
 
-- When you create an encrypted EBS volume, you get the following :
-  - Data at rest is encrypted inside the volume
-  - All the data in flight moving between the instance and the volume is encrypted
-  - All snapshots are encrypted
-  - All volumes created from the saphosts are encrypyed
-- Encryption and descryption are handled by EC2
-- Encryption has minimal impact on latency
-- EBS Encryption leverages keys from KMS (AES-256)
-- Copying an unencrypted snapshot allows encryption
-- 
+Un volume EBS chiffré offre :
+- Données au repos chiffrées dans le volume
+- Données en transit (entre l'instance et le volume) chiffrées
+- Tous les snapshots chiffrés
+- Tous les volumes créés depuis ces snapshots chiffrés
+- Le chiffrement/déchiffrement est géré par EC2, avec un impact minimal sur la latence
+- Utilise les clés de **KMS** (AES-256)
+- Copier un snapshot non chiffré permet de le chiffrer au passage
 
 ## EC2 Instance Store
 
@@ -154,16 +152,17 @@ On peut recréer un volume à partir d'un snapshot.
 
 ## EFS - Elastic File System
 
-- Managed NFS (network file system) that can be mounted pn many EC2
-- EFS works with EC2 instances in multi-AZ
-- Highly avaivable, scalable, expensive, pay per use
-- Use cases : content management, web serving, data sharing, Wordpress
-- Uses NFSv4.1 prtocol
-- Uses security group to control acces to EFS
-- Compatible with Linux based AMI only
-- Encryption at rest using KMS
-- POSIX file system that hast a standart file API
-- File stem scales automatically, pay per use no capacity planning
+EFS = système de fichiers réseau **managé** (NFS) qui peut être monté sur plusieurs instances EC2 en même temps.
+
+- Fonctionne avec des instances EC2 en **multi-AZ**
+- Hautement disponible, scalable, cher, facturé à l'usage
+- Cas d'usage : content management, web serving, partage de données, WordPress
+- Utilise le protocole **NFSv4.1**
+- Contrôle d'accès via **security group**
+- Compatible **Linux uniquement** (AMI Linux)
+- Chiffrement au repos via KMS
+- Système de fichiers POSIX, avec une API de fichier standard
+- Scaling automatique, pay-per-use, aucune gestion de capacité
 
 <img width="318" height="167" alt="image" src="https://github.com/user-attachments/assets/5ea84aa4-8042-4e4e-bace-9329d076716d" />
 
@@ -192,8 +191,7 @@ Déplace automatiquement les fichiers selon leur fréquence d'accès (après N j
 - **Standard** = fichiers fréquemment accédés (le plus cher, le plus rapide)
 - **Infrequent Access (EFS-IA)** = coût réduit pour stocker, mais coût à chaque récupération de fichier
 - **Archive** = données très rarement consultées (quelques fois/an), 50% moins cher
-- Lifecycle Policy = règle automatique qui déplace les fichiers entre niveaux près N jours sans accès (ex : 60 jours → Standard vers IA)
-- Totalement transparent pour l'application
+**Lifecycle Policy** = règle automatique qui déplace les fichiers entre niveaux près N jours sans accès (ex : 60 jours → Standard vers IA). Totalement transparent pour l'application
 
 
 <img width="192" height="276" alt="image" src="https://github.com/user-attachments/assets/a8b4a0d6-c0f3-423e-af31-b56ac89aac90" />
@@ -205,4 +203,15 @@ Déplace automatiquement les fichiers selon leur fréquence d'accès (après N j
 ### Économies
 Jusqu'à 90%+ en combinant storage tiers + One Zone
 
+
+### Récap rapide
+ 
+| | EBS | Instance Store | EFS |
+|---|---|---|---|
+| Type | Bloc, réseau | Bloc, physique (local) | Fichier, réseau (NFS) |
+| Attachable à plusieurs instances | Non (sauf Multi-Attach io1/io2) | Non | Oui, multi-AZ |
+| Persistance après Stop | Oui | **Non** (données perdues) | Oui |
+| Lié à une AZ | Oui (1 AZ) | Oui (1 hôte) | Non (multi-AZ) |
+| Peut servir de boot volume | Oui (SSD uniquement) | Oui (sur certains types d'instance) | Non |
+| OS compatible | Tous | Tous | Linux uniquement |
 
