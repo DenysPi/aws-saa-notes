@@ -266,6 +266,30 @@ AWS propose 4 types de Load Balancers managés :
 - Metrics such as Average CPU are computed for the overall ASG instances
 - Based on alarm:
   - We can create scale out policies (increase)
-  - We can create scale in polocies (decrease)
+  - We can create scale in policies (decrease)
 
 <img width="655" height="126" alt="image" src="https://github.com/user-attachments/assets/73659004-d7c8-4f48-a1f0-e661004aa31c" />
+
+### Scaling Policies
+
+- **Dynamic Scaling**
+  - **Target Tracking Scaling**
+    - Simple to set-up
+    - Example: i want the average ASG CPU to stay around 40%
+  - **Simple / Step Scaling**
+    - When a CloudWatch alar: is triggered(example CPU > 70%), then add 2 units
+- **Scheduled Scaling**
+  - Anticipate a scaling based on known usage patters
+  - Example: increase the min capacity to 10 at 5pm on Firadays
+- **Predictivee Scaling**
+  - Continiostly forecast load ans schedule scaling ahead
+
+<img width="682" height="211" alt="image" src="https://github.com/user-attachments/assets/422a44a4-894b-4d99-bc4f-bdbad39dcd8d" />
+
+
+**Good metrics to scale on :**
+- **CPUUtilization:** Average CPU utilization across your instances
+- **RequestCountPerTarget:** To make sure number of request per EC2 instances is stable
+- **Average Network In/Out:**
+- **Any custom metric**
+
