@@ -104,3 +104,17 @@
   - Access the underlying EC2 Instance using SSH or SSM Session Manager
 - **De-activate Automation Mode** to perform your customization, better to take a DB snapshot before
 
+## RDS Proxy
+
+- Fully managed database proxy for RDS/Aurora
+- Pools and shares DB connections: N clients, small backend connection pool
+- **Reduces stress on DB resources (CPU, RAM) and avoids exhausting `max_connections`**
+- **Key use case: Lambda** (each invocation opens its own connection)
+- Serverless, autoscaling, highly available (multi-AZ)
+- **Reduces RDS & Aurora failover time by up to 66%** (client stays connected to the proxy, no DNS cache, no reconnection storm)
+- Supports RDS (MySQL, PostgreSQL, MariaDB, MS SQL Server) and Aurora (MySQL, PostgreSQL)
+- No code changes needed (point apps at the proxy endpoint instead of the DB endpoint)
+- **Enforces IAM authentication for DB, credentials stored in AWS Secrets Manager**
+- Never publicly accessible(must be accessed from within the VPC)
+
+<img width="388" height="493" alt="image" src="https://github.com/user-attachments/assets/8c285b10-ae35-4c54-8adf-0c2f480cb50b" />
